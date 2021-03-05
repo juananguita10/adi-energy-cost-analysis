@@ -21,7 +21,9 @@ def input_fn(data_file, batch_size, num_epoch = None):
     # create the iterator
     dataset = (tf.compat.v1.data.TextLineDataset(data_file) # read text file       
         .skip(1) # skip header row       
-        .map(parse_csv))			   
+        .map(parse_csv)
+    #    .shuffle(3, reshuffle_each_iteration=True)
+        )			   
     dataset = dataset.repeat(num_epoch)    
     dataset = dataset.batch(batch_size) 
         				
@@ -44,7 +46,7 @@ X4= tf.feature_column.numeric_column('day')
 base_columns = [X1, X2, X3, X4]
 
 # build the model
-model = tf.estimator.LinearRegressor(feature_columns=base_columns, model_dir = './zz_train000')
+model = tf.estimator.LinearRegressor(feature_columns=base_columns, model_dir='./zz_train004')
 
 # train the estimator
 model.train(steps = 1000, input_fn = lambda : input_fn(df_train, batch_size = 128, num_epoch = None))
