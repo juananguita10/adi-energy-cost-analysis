@@ -130,3 +130,7 @@ dmypy.json
 
 # Training folders
 *zz_train*
+
+# R files
+*.RData
+*.Rhistory

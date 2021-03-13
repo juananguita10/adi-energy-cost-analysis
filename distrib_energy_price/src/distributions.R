@@ -47,6 +47,12 @@ fitgumbel
 plot(fitgumbel)
 x_gum <- gofstat(fitgumbel)
 
+# Fitting 
+fitnl <- fitdist(EnergyPrice20$Valor_OMIE, "nlminb")
+fitnl
+plot(fitnl)
+x_nl <- gofstat(fitnl)
+
 # All distributions fitting summary
 x_norm
 x_norm$kstest
@@ -61,5 +67,20 @@ x_log$kstest
 x_gum
 x_gum$kstest
 
+# Search for the best fit
+library(gamlss)
+library(gamlss.dist)
+library(gamlss.add)
+
+fit <- fitDist(EnergyPrice20$Valor_OMIE, k = 2, type = "realplus", trace = FALSE, try.gamlss = TRUE)
+
+summary(fit)
+
+histDist(EnergyPrice20$Valor_OMIE, family=LOGNO, nbins=30, line.col="darkblue", line.wd=2.5)
+
+
 # Cálculo da probabilidade com base na distribuição lognormal
-#plnorm(5.12, 0.2979401, 0.6397913, lower.tail = FALSE)
+pnorm(50, 33.96226, 11.40810, lower.tail = FALSE)
+
+
+
