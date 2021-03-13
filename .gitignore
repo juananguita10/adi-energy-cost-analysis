@@ -134,3 +134,6 @@ dmypy.json
 # R files
 *.RData
 *.Rhistory
+
+# Office temp files
+~$*
