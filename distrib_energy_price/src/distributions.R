@@ -1,40 +1,40 @@
-# Goodness-of-fit 
-# Importing Energy data
 library(readxl)
+library(fitdistrplus)
+
+# Best fit search libraries
+library(gamlss)
+library(gamlss.dist)
+library(gamlss.add)
+
+# Importing Energy data
+rm(list=ls()) # Clean the Global Environment
 setwd("C:/Projects/ISCTE/ADI/adi-energy-cost-analysis/distrib_energy_price/data")
-EnergyPrice20 <- read_excel("OMIE_ES_MARCA_TECNOL_1_01_01_2020_30_04_2020_js.xlsx", sheet = "Preco_OMIE_ES_2020")
+EnergyPrice20 <- read_excel("OMIE_ES_MARCA_TECNOL_1_01_01_2020_30_04_2020_js.xlsx", sheet = "quartersR")
 attach(EnergyPrice20)
 head(EnergyPrice20)
 
-library(fitdistrplus)
-
 # Fitting normal distribution --> Best
-fitnormal <- fitdist(EnergyPrice20$Valor_OMIE, "norm")
-fitnormal
+(fitnormal <- fitdist(price, "norm"))
 plot(fitnormal)
 x_norm <- gofstat(fitnormal)
 
 # Fitting gamma distribution
-fitgamma <- fitdist(EnergyPrice20$Valor_OMIE, "gamma")
-fitgamma
+(fitgamma <- fitdist(price, "gamma"))
 plot(fitgamma)
 x_gam <- gofstat(fitgamma)
 
 # Fitting exponencial distribution
-fitexp <- fitdist(EnergyPrice20$Valor_OMIE, "exp")
-fitexp
+(fitexp <- fitdist(price, "exp"))
 plot(fitexp)
 x_exp <- gofstat(fitexp)
 
 # Fitting weibull distribution --> Frontrunner
-fitweibull <- fitdist(EnergyPrice20$Valor_OMIE, "weibull")
-fitweibull
+(fitweibull <- fitdist(price, "weibull"))
 plot(fitweibull)
 x_wei <- gofstat(fitweibull)
 
 # Fitting lognormal distribution
-fitlognormal <- fitdist(EnergyPrice20$Valor_OMIE, "lnorm")
-fitlognormal
+(fitlognormal <- fitdist(price, "lnorm"))
 plot(fitlognormal)
 x_log <- gofstat(fitlognormal)
 
@@ -42,14 +42,12 @@ x_log <- gofstat(fitlognormal)
 dgumbel <- function(x, a, b) 1/b*exp((a-x)/b)*exp(-exp((a-x)/b))
 pgumbel <- function(q, a, b) exp(-exp((a-q)/b))
 qgumbel <- function(p, a, b) a-b*log(-log(p))
-fitgumbel <- fitdist(EnergyPrice20$Valor_OMIE, "gumbel", start=list(a=10, b=10))
-fitgumbel
+(fitgumbel <- fitdist(price, "gumbel", start=list(a=10, b=10)))
 plot(fitgumbel)
 x_gum <- gofstat(fitgumbel)
 
 # Fitting 
-fitnl <- fitdist(EnergyPrice20$Valor_OMIE, "nlminb")
-fitnl
+(fitnl <- fitdist(price, "nlminb"))
 plot(fitnl)
 x_nl <- gofstat(fitnl)
 
@@ -67,20 +65,12 @@ x_log$kstest
 x_gum
 x_gum$kstest
 
-# Search for the best fit
-library(gamlss)
-library(gamlss.dist)
-library(gamlss.add)
+# Get probability of price being > 50 using normal distribution
+pnorm(50, 33.96226, 11.40810, lower.tail = FALSE)
 
+# Search for the best fit
 fit <- fitDist(EnergyPrice20$Valor_OMIE, k = 2, type = "realplus", trace = FALSE, try.gamlss = TRUE)
 
 summary(fit)
 
 histDist(EnergyPrice20$Valor_OMIE, family=LOGNO, nbins=30, line.col="darkblue", line.wd=2.5)
-
-
-# Cálculo da probabilidade com base na distribuição lognormal
-pnorm(50, 33.96226, 11.40810, lower.tail = FALSE)
-
-
-

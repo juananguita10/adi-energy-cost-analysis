@@ -1,73 +1,50 @@
-# Importing Energy data
 library(readxl)
-setwd("C:/Projects/ISCTE/ADI/adi-energy-cost-analysis/distrib_energy_price/data")
+library(hash)
 
-# Global Descriptive Statistics
-EnergyPrice20 <- read_excel("OMIE_ES_MARCA_TECNOL_1_01_01_2020_30_04_2020_js.xlsx", sheet = "Preco_OMIE_ES_2020")
+# Importing Energy data
+rm(list=ls()) # Clean the Global Environment
+setwd("C:/Projects/ISCTE/ADI/adi-energy-cost-analysis/distrib_energy_price/data")
+EnergyPrice20 <- read_excel("OMIE_ES_MARCA_TECNOL_1_01_01_2020_30_04_2020_js.xlsx", sheet = "quartersR")
 attach(EnergyPrice20)
 head(EnergyPrice20)
 
-mean(Valor_OMIE)
-var(Valor_OMIE)
-sd(Valor_OMIE)
-cv <- sd(Valor_OMIE)/mean(Valor_OMIE)*100
-cv
-median(Valor_OMIE)
-percentis <- quantile(Valor_OMIE, c(0.01, 0.02, 0.5, 0.70, 0.95, 0.99))
-percentis
+# Function returning a hash with descriptive analysis from data
+desc_analysis <- function(d) {
+  h <- hash()  
+  h[["length"]] <- length(d)
+  
+  if (length(d) > 0) {
+    h[["mean"]] <- mean(d)
+    h[["median"]] <- median(d)
+    h[["quantile"]] <- quantile(d, c(0.01, 0.02, 0.5, 0.70, 0.95, 0.99))
+  }
+  
+  if (length(d) > 1) {
+    h[["var"]] <- var(d)
+    h[["standard_deviation"]] <- sd(d)
+    h[["variant_coefficient"]] <- (sd(d)/mean(d)*100)
+  } else {
+    h[["var"]] <- 0
+    h[["standard_deviation"]] <- 0
+    h[["variant_coefficient"]] <- 0
+  }
 
-# Q1 Descriptive Statistics
-EnergyPrice20Q1 <- read_excel("OMIE_ES_MARCA_TECNOL_1_01_01_2020_30_04_2020_js.xlsx", sheet = "Q1_2020")
-attach(EnergyPrice20Q1)
-head(EnergyPrice20Q1)
+  return(h)
+}
 
-mean(Valor_OMIE)
-var(Valor_OMIE)
-sd(Valor_OMIE)
-cv <- sd(Valor_OMIE)/mean(Valor_OMIE)*100
-cv
-median(Valor_OMIE)
-percentis <- quantile(Valor_OMIE, c(0.01, 0.02, 0.5, 0.70, 0.95, 0.99))
-percentis
+complete_quarter_da <- function(qtr) {
+  print(paste("Descriptive analysis for quarter", qtr, " (every technology):", sep=" "))
+  ds <- subset(EnergyPrice20, q==qtr)
+  print(desc_analysis(ds$price))
+  print(paste("Descriptive analysis for quarter", qtr, "by Technology:", sep=" "))
+  tapply(ds$price, ds$tech, desc_analysis)
+}
 
-# Q2 Descriptive Statistics
-EnergyPrice20Q1 <- read_excel("OMIE_ES_MARCA_TECNOL_1_01_01_2020_30_04_2020_js.xlsx", sheet = "Q2_2020")
-attach(EnergyPrice20Q2)
-head(EnergyPrice20Q2)
+# Global Descriptive Statistics
+(da_global <- desc_analysis(price))
 
-mean(Valor_OMIE)
-var(Valor_OMIE)
-sd(Valor_OMIE)
-cv <- sd(Valor_OMIE)/mean(Valor_OMIE)*100
-cv
-median(Valor_OMIE)
-percentis <- quantile(Valor_OMIE, c(0.01, 0.02, 0.5, 0.70, 0.95, 0.99))
-percentis
-
-# Q3 Descriptive Statistics
-EnergyPrice20Q1 <- read_excel("OMIE_ES_MARCA_TECNOL_1_01_01_2020_30_04_2020_js.xlsx", sheet = "Q3_2020")
-attach(EnergyPrice20Q3)
-head(EnergyPrice20Q3)
-
-mean(Valor_OMIE)
-var(Valor_OMIE)
-sd(Valor_OMIE)
-cv <- sd(Valor_OMIE)/mean(Valor_OMIE)*100
-cv
-median(Valor_OMIE)
-percentis <- quantile(Valor_OMIE, c(0.01, 0.02, 0.5, 0.70, 0.95, 0.99))
-percentis
-
-# Q4 Descriptive Statistics
-EnergyPrice20Q1 <- read_excel("OMIE_ES_MARCA_TECNOL_1_01_01_2020_30_04_2020_js.xlsx", sheet = "Q4_2020")
-attach(EnergyPrice20Q4)
-head(EnergyPrice20Q4)
-
-mean(Valor_OMIE)
-var(Valor_OMIE)
-sd(Valor_OMIE)
-cv <- sd(Valor_OMIE)/mean(Valor_OMIE)*100
-cv
-median(Valor_OMIE)
-percentis <- quantile(Valor_OMIE, c(0.01, 0.02, 0.5, 0.70, 0.95, 0.99))
-percentis
+# Descriptive Statistics by quarter
+complete_quarter_da(1) #Q1
+complete_quarter_da(2) #Q2
+complete_quarter_da(3) #Q3
+complete_quarter_da(4) #Q4
