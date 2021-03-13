@@ -1,91 +1,66 @@
 # Clean the Global Environment
 rm(list=ls())
 
-# Open file "vendas"
+# Importing Energy data
 library(readxl)
-vendas <- read_excel("GENGADI2021.xlsx", sheet = "vendas")
-attach(vendas) # the first line includes the names of the variables
-head(vendas, 6) # to see the first 6 lines
-
-# Correlation Analysis: Análise de Correlação
-plot(sales ~ adverting) # Scatter diagram: Diagrama de dispersão
-abline(lm(sales ~ adverting), col="blue", lty=1, lwd=4)
-abline(h=mean(sales), col="red", lty=1, lwd=2)
-cor(sales, adverting) # Simple Correlation Coefficient: Coeficiente de correlação simples
-
-# Computing by "hand": Cálculo manual do coeficiente de correlação simples
-r <- cov(sales, adverting)/(sd(sales)*sd(adverting))
-r
-(r <- cov(sales, adverting)/(sd(sales)*sd(adverting)))
-cor.test(sales, adverting, method="pearson") # Significance test: Teste de significância
-cor.test(sales, adverting)
-(n <- length(sales))
-(test <- r*sqrt(n-2)/sqrt(1-r^2))
-pvalue <- pt(test, n-2, lower.tail = FALSE)*2 # probability on the right: calcula a probabilidade à direita
-pvalue
-
-cor.test(sales, adverting, method="spearman") # Ordinal variables: Variáveis ordinais
-
-# Open file "vendas"
-library(readxl)
-salarios <- read_excel("GENGADI2021.xlsx", sheet = "salariosR")
-# Salaries: 1-Portugal, 2-Greece, 3-Spain
-attach(salarios) # the first line includes the names of the variables
-head(salarios, 6) # to see the first 6 lines
+setwd("C:/Projects/ISCTE/ADI/adi-energy-cost-analysis/distrib_energy_price/data")
+EnergyPrice20 <- read_excel("OMIE_ES_MARCA_TECNOL_1_01_01_2020_30_04_2020_js.xlsx", sheet = "quartersR")
+attach(EnergyPrice20)
+head(EnergyPrice20)
 
 # Histogram
-hist(salary)
+hist(price)
 library(moments)
-skewness(salary) # 0 - no caso da normal
-kurtosis(salary) # 3 - no caso da normal
+skewness(price) # 0 - no caso da normal
+kurtosis(price) # 3 - no caso da normal
 
 # Quantiles / Percentiles Salary
-quantile(salary, c(0.01, 0.05, 0.95, 0.99))
+quantile(price, c(0.01, 0.05, 0.95, 0.99))
 
 # Testing the normality of salaries
 library("nortest")
-lillie.test(salary) # Kolmogorov-Smirnov with Lilliefors correction # amostras de dimensão intermédia (30-50)
-ad.test(salary) # Anderson-Darling
-cvm.test(salary) # Cramer-von Mises
-pearson.test(salary) # Pearson Chi-Square
-sf.test(salary) # Shapiro-Francia # pequenas amostras <30
+#lillie.test(price) # Kolmogorov-Smirnov with Lilliefors correction # amostras de dimensão intermédia (30-50)
+ad.test(price) # Anderson-Darling
+cvm.test(price) # Cramer-von Mises
+pearson.test(price) # Pearson Chi-Square
+#sf.test(price) # Shapiro-Francia # pequenas amostras <30
 library(tseries)
-jarque.bera.test(salary) # Jarque-Bera test (package "tseries") # Grandes amostras
-jarque.test(salary) # Jarque-Bera test (package "moments")
+#jarque.bera.test(price) # Jarque-Bera test (package "tseries") # Grandes amostras
+jarque.test(price) # Jarque-Bera test (package "moments")
 
-# Teste à média do salário em Portugal = 1200; Testing the nullity of returns' mean
-head(salarios)
-portugal <- subset(salarios, country=1)
-greece <- subset(salarios, country=1)
-spain <- subset(salarios, country=1)
+# Energy price = 35 in Q1 test : Testing the nullity of returns' mean
+q1 <- subset(EnergyPrice20, q==1)
+q2 <- subset(EnergyPrice20, q==2)
+q3 <- subset(EnergyPrice20, q==3)
+q4 <- subset(EnergyPrice20, q==4)
 
-t.test(portugal$salary, mu=1200) # H0: média na populção =1200
+t.test(q1$price, mu=35) # H0: mean = 35 -> not rejected
 
-# Comparação das variâncias: Comparing variances
-portgre <- subset(salarios, country<3)
-tapply(portgre$salary, portgre$country, var)
+# Comparing variances
+q1q2 <- subset(EnergyPrice20, q<3)
+tapply(q1q2$price, q1q2$q, var)
 
-var.test(portgre$salary ~ portgre$country) # F test
-bartlett.test(portgre$salary ~ portgre$country) # Bartlett test
+var.test(q1q2$price ~ q1q2$q) # F test
+bartlett.test(q1q2$price ~ q1q2$q) # Bartlett test
 
-# Test to compare the means (Portugal and Greece)
-tapply(portgre$salary, portgre$country, mean)
-# Não esquecer que antes de avançar com o teste seguinte temos de comparar as 
-# variâncas. Se não rejeitar a =, var.equal=TRUE
-t.test(portgre$salary ~ portgre$country, paired = FALSE, var.equal=FALSE, conf.level = 0.95)
+# Test to compare the means (q1 and q2)
+tapply(q1q2$price, q1q2$q, mean)
+t.test(q1q2$price ~ q1q2$q, paired = FALSE, var.equal=FALSE, conf.level = 0.95)
 
-# Test to compare the means (all the countries)
-tapply(salary, country, mean)
+# Test to compare the means (all the quarters)
+tapply(price, q, mean)
 
-tapply(salary, country, lillie.test)
+tapply(price, q, lillie.test)
 
-bartlett.test(salary ~ country)
+bartlett.test(price ~ q)
 
-fitanova1 <- aov(salary ~ country, data=salarios) # ANOVA test
+fitanova1 <- aov(price ~ q, data=EnergyPrice20) # ANOVA test
 summary(fitanova1)
 
-kruskal.test(salary ~ country, data=salarios) # Kruskal-Wallis test
+kruskal.test(price ~ q, data=EnergyPrice20) # Kruskal-Wallis test
 
+
+#----------------- TO BE CONTINUED -----------------------------
 
 ## Regression Analysis: Regression Analysis
 # Estimate the linear regression model
