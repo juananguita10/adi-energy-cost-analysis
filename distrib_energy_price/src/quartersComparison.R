@@ -10,13 +10,51 @@ EnergyPrice20 <- read_excel("OMIE_ES_MARCA_TECNOL_1_01_01_2020_30_04_2020_js.xls
 attach(EnergyPrice20)
 head(EnergyPrice20)
 
-q1 <- subset(EnergyPrice20, q==1)
-q2 <- subset(EnergyPrice20, q==2)
-q3 <- subset(EnergyPrice20, q==3)
-q4 <- subset(EnergyPrice20, q==4)
+# Function passing array of numbers to condition
+get_condition_str <- function(arr, nm) {
+  if (length(arr) == 0 | nm == "") {
+    return("")  
+  }
+  
+  arrStr <- ""
+  for (i in arr) {
+    if (typeof(i) == "character") {
+      i <- paste("'", i, "'", sep="")
+    }
+    
+    if (arrStr == "") {
+      arrStr <- paste(arrStr, "(", nm, "==", i)
+    } else {
+      arrStr <- paste(arrStr, "|", nm, "==", i)
+    }
+  }
+  arrStr <- paste(arrStr, ")")
+  
+  return(arrStr)
+}
 
-q1q2 <- subset(EnergyPrice20, q<3)
+# Function returning a subset of the quarters needed
+get_subset_energy <- function(qArray=c(), eArray=c()) {
+  qStr <- get_condition_str(qArray, "q")
+  eStr <- get_condition_str(eArray, "tech")
+  
+  if (qStr == "" & eStr == "" ) {
+    return(price)
+  }
+  
+  if (qStr != "" & eStr != "") {
+    cStr <- paste(qStr, eStr, sep=" & ")
+  } else if (qStr != "") {
+    cStr <- qStr
+  } else if (eStr != "") {
+    cStr <- eStr
+  }
+  print(cStr)
+  
+  return(subset(price, eval(parse(text=cStr))))
+}
 
+#----------------------------------- Part 1 ------------------------------
 # Histogram
 hist(price)
 
@@ -35,9 +73,14 @@ sf.test(price) # Shapiro-Francia # (<30)
 jarque.bera.test(price) # Jarque-Bera test (package "tseries") # (>50)
 jarque.test(price) # Jarque-Bera test
 
+# Getting q1 subset
+q1 <- get_subset_energy(qArray=c(1))
 # Energy price = 35 in Q1 test # Testing the nullity of returns' mean
 t.test(q1$price, mu=35) # H0 # mean = 35 -> not rejected
 
+#----------------------------------- Part 2 ------------------------------
+# Getting q1 and q2 subset
+q1q2 <- get_subset_energy(qArray=c(1,2))
 # Comparing variances q1 vs q2
 tapply(q1q2$price, q1q2$q, var)
 var.test(q1q2$price ~ q1q2$q) # F test
@@ -58,3 +101,11 @@ fitanova1 <- aov(price ~ q, data=EnergyPrice20) # ANOVA test
 summary(fitanova1)
 
 kruskal.test(price ~ q, data=EnergyPrice20) # Kruskal-Wallis test
+
+
+
+
+
+# Example getting tech's subsets
+allBG <- get_subset_energy(eArray=c("BG"))
+q1BG <- get_subset_energy(qArray=c(1), eArray=c("BG"))
