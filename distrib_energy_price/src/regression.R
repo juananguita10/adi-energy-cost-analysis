@@ -9,16 +9,8 @@ EnergyPrice20 <- read_excel("OMIE_ES_MARCA_TECNOL_1_01_01_2020_30_04_2020_js.xls
 attach(EnergyPrice20)
 head(EnergyPrice20)
 
-q1 <- subset(EnergyPrice20, q==1)
-q2 <- subset(EnergyPrice20, q==2)
-q3 <- subset(EnergyPrice20, q==3)
-q4 <- subset(EnergyPrice20, q==4)
-
-q1q2 <- subset(EnergyPrice20, q<3)
-
 # Estimate the linear regression model
-
-reg1 <- lm(sales ~ adverting, data = salarios)
+reg1 <- lm(price ~ techn, data = EnergyPrice20)
 summary(reg1)
 
 # Estimates of the coefficients
@@ -36,9 +28,9 @@ mean(residuals(reg1))
 # Predicted values
 yhat <- predict(reg1)
 sum(yhat)
-sum(sales)
-plot(sales ~ yhat)
-mean(sales)
+sum(price)
+plot(price ~ yhat)
+mean(price)
 mean(yhat)
 
 # R-Squared and adjusted R-Squared
@@ -46,14 +38,14 @@ summary(reg1)$r.squared
 summary(reg1)$adj.r.squared
 
 # TSS
-TSS <- sum((sales-mean(sales))^2) # Variação total em torno da média
-ESS <- sum((sales-mean(sales))^2) # Variação explicada
-e <- sales-yhat # e_i = Y_i - Y^_i ## Cálculo dos resíduos
+TSS <- sum((price-mean(price))^2) # Variação total em torno da média
+ESS <- sum((price-mean(price))^2) # Variação explicada
+e <- price-yhat # e_i = Y_i - Y^_i ## Cálculo dos resíduos
 e[1]
 e
 RSS <- sum(e^2)
 RSS
-RSS <- sum((sales-yhat)^2) # Residual Sum of Squares: Variação não explicada
+RSS <- sum((price-yhat)^2) # Residual Sum of Squares: Variação não explicada
 R21 <- ESS/TSS # Coeficiente de determinação, R^2
 R21
 (R21 <- ESS/TSS)
@@ -70,39 +62,38 @@ summary(reg1)[4]
 coef(summary(reg1))[, "t value"]
 
 # Previsão das vendas se  advertising = 500
-salesprev <- reg1$coefficients[1]+reg1$coefficients[2]*500
-salesprev
+priceprev <- reg1$coefficients[1]+reg1$coefficients[2]*500
+priceprev
 
-yhat <- reg1$coefficients[1] + reg1$coefficients[2]*adverting
+yhat <- reg1$coefficients[1] + reg1$coefficients[2]*techn
 yhat
 
 # Estimar o modelo de regressão linear múltipla
-head(vendas)
-varexp <- cbind(adverting, Q1, Q2, Q3)
-reg2 <- lm(sales ~ adverting + Q1 + Q2 + Q3, data = vendas)
+varexp <- cbind(techn, q)
+reg2 <- lm(price ~ techn + q, data = EnergyPrice20)
 summary(reg2)
-reg21 <- lm(sales ~ varexp, data = vendas)
+reg21 <- lm(price ~ varexp, data = EnergyPrice20)
 summary(reg21) # para aceder ao conteúdo do objeto reg21
 
-# Estimate the quadratic function between sales and adverting
-adverting2 <- adverting^2
-reg3 <- lm(sales ~ adverting + adverting2, data = vendas)
+# Estimate the quadratic function between price and technology
+techn2 <- techn^2
+reg3 <- lm(price ~ techn + techn2, data = EnergyPrice20)
 summary(reg3)
 
 # Estimate lin-lin
-regC31 <- lm(sales ~ adverting, data = vendas)
+regC31 <- lm(price ~ techn, data = EnergyPrice20)
 summary(regC31)
 
 # Estimate log-lin
-regC32 <- lm(log(sales) ~ adverting, data = vendas)
+regC32 <- lm(log(price) ~ techn, data = EnergyPrice20)
 summary(regC32)
 
 # Estimate lin-log
-regC33 <- lm(sales ~ log(adverting), data = vendas)
+regC33 <- lm(price ~ log(techn), data = EnergyPrice20)
 summary(regC33)
 
 # Estimate log-log
-regC34 <- lm(log(sales) ~ log(adverting), data = vendas)
+regC34 <- lm(log(price) ~ log(techn), data = EnergyPrice20)
 summary(regC34)
 
 # Comparing R-squared from different models
@@ -114,7 +105,7 @@ AR2C31 <- summary(regC31)$adj.r.squared
 # Na regC32 LOG(Y) = X2 (então a var dependente é o LOG(Y))
 predict(regC32) # ^log(Y) não ^Y
 yhat2 <- exp(predict(regC32))
-R2C32 <- cor(sales, yhat2)^2
+R2C32 <- cor(price, yhat2)^2
 AR2C32 <- 1-(1-R2C32)*(60-1)/(60-2)
 
 # R2 from regC33
@@ -123,12 +114,12 @@ AR2C33 <- summary(regC33)$adj.r.squared
 
 # R2 from regC34
 yhat4 <- exp(predict(regC34))
-R2C34 <- cor(sales, yhat4)^2
+R2C34 <- cor(price, yhat4)^2
 AR2C34 <- 1-(1-R2C34)*(60-1)/(60-2)
 
 # R2 from reg2
 yhat2 <- predict(reg2)
-R2C35 <- cor(sales, yhat2)^2
+R2C35 <- cor(price, yhat2)^2
 (AR2C35 <- 1-(1-R2C35)*(60-1)/(60-5))
 
 tableR2 <- plot_ly(
