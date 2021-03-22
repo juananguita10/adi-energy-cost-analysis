@@ -5,12 +5,12 @@ library(plotly)
 # Importing Energy data
 rm(list=ls()) # Clean the Global Environment
 setwd("C:/Projects/ISCTE/ADI/adi-energy-cost-analysis/distrib_energy_price/data")
-EnergyPrice20 <- read_excel("OMIE_ES_MARCA_TECNOL_1_01_01_2020_30_04_2020_js.xlsx", sheet = "quartersR")
+EnergyPrice20 <- read_excel("OMIE_ES_MARCA_TECNOL_1_01_01_2020_30_04_2020_js.xlsx", sheet = "TEcnologia")
 attach(EnergyPrice20)
 head(EnergyPrice20)
 
 # Estimate the linear regression model
-reg1 <- lm(price ~ techn, data = EnergyPrice20)
+reg1 <- lm(omie ~ "Tecnologia Codigo", data = EnergyPrice20)
 summary(reg1)
 
 # Estimates of the coefficients

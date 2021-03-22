@@ -1,5 +1,6 @@
 library(readxl)
 library(fitdistrplus)
+library(tseries)
 
 # Best fit search libraries
 library(gamlss)
